@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>MiDinero · Cuentas (beta 0.9.4)</title>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>MiDinero · Cuentas (beta 0.9.4.1)</title>
 <style>
 :root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#17253b;background:#f1f5fa}*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}select{border:1px solid #cad5e4;border-radius:11px;padding:11px;width:100%;background:white}button{cursor:pointer}header{background:#fff;border-bottom:1px solid #e2e8f0;padding:16px max(20px,calc((100vw - 1080px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font-size:23px;margin:0}header span{font-size:12px;color:#68788b}main{max-width:1080px;margin:30px auto;padding:0 18px}.grid{display:grid;grid-template-columns:1.15fr 1fr;gap:18px}.card{background:white;border-radius:22px;padding:24px;box-shadow:0 8px 28px #1832510a}.hero{background:linear-gradient(130deg,#18395c,#2460a4);color:#fff}.hero p{color:#d9e8fa}.hero strong{font-size:clamp(29px,4vw,44px);letter-spacing:-1px}h2{font-size:20px;margin:0 0 12px}p{line-height:1.5;color:#627287}.hero p{margin-bottom:8px}.full{grid-column:1/-1}.account{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid #edf0f5}.account:last-child{border-bottom:0}.symbol{width:43px;height:43px;display:grid;place-items:center;border-radius:13px;color:#fff;font-size:22px;flex-shrink:0}.account-name{flex:1;min-width:0}.account-name b{display:block;overflow-wrap:anywhere}.account-name small{color:#76869a}.money{font-weight:750;white-space:nowrap}.btn{border:0;border-radius:11px;background:#2463b8;color:#fff;padding:11px 15px;font-weight:650}.btn.secondary{background:#e9eef6;color:#243e60}.btn.danger{background:#fee6e6;color:#9b2424}.btn:disabled{opacity:.55;cursor:not-allowed}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.top{display:flex;align-items:center;justify-content:space-between;gap:10px}.muted{font-size:13px;color:#64748b}.message{padding:12px 15px;border-radius:12px;background:#e9f3ff;color:#174875;margin:12px 0}.message.error{background:#ffebeb;color:#a52828}label{display:block;font-weight:650;font-size:14px;margin:12px 0 5px}input{border:1px solid #cad5e4;border-radius:11px;padding:11px;width:100%;background:#fff}dialog{border:0;border-radius:22px;box-shadow:0 22px 75px #15253b45;width:min(440px,calc(100% - 24px));padding:25px}dialog::backdrop{background:#13223885}dialog h2{margin-top:0}.hint{font-size:13px;color:#64748b}.history{max-height:230px;overflow:auto;margin-top:12px}.history-item{border-bottom:1px solid #edf0f5;padding:10px 0;font-size:14px}.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.inline-btn{border:0;background:#edf3fb;color:#244b7e;border-radius:9px;padding:7px 10px}.empty{padding:28px 8px;text-align:center;color:#64748b}.hidden{display:none!important}footer{font-size:12px;color:#78879a;margin:26px 0}.lock{padding:28px;text-align:center;max-width:460px;margin:70px auto;background:white;border-radius:20px}#app{display:none}@media(max-width:740px){.grid{grid-template-columns:1fr}.full{grid-column:auto}main{margin:17px auto}.card{padding:20px}header{padding:15px 18px}.account{gap:9px}.money{font-size:14px}}
 .nav-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}.nav-tabs button{border:1px solid #cad5e4;border-radius:10px;padding:9px 13px;background:#fff;color:#244b7e;font-weight:650}.nav-tabs button[aria-selected="true"]{background:#2463b8;color:#fff;border-color:#2463b8}.cat-preview{border-bottom:1px solid #edf0f5;padding:12px 0}.cat-preview:last-child{border:0}.cat-preview small{display:block;color:#64748b;margin-top:4px;line-height:1.5}#undo-notice{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom, 0px));left:50%;transform:translateX(-50%);z-index:1000;width:min(440px,calc(100vw - 28px));box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:#173c63;color:#fff;border-radius:14px;box-shadow:0 8px 32px #13223855}#undo-notice .inline-btn{background:#fff;color:#173c63;font-weight:700;white-space:nowrap}#undo-notice:focus{outline:3px solid #80baff;outline-offset:3px}
@@ -12,9 +12,23 @@
 .mv-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:#64748b}
 .mv-meta strong{font-size:14px;color:#26364b;white-space:nowrap}
 @media(max-width:420px){.mv-chip{font-size:12px;padding:5px 8px}.mv-meta{gap:7px}}
+
+/* Movimiento compacto: dos filas semánticas, sin mezclar los grupos. */
+.mv-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"top amount" "category actions";gap:7px 10px;align-items:center}
+.mv-entry .mv-top{grid-area:top;display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden}
+.mv-entry .mv-date{font-size:12px;color:#64748b;white-space:nowrap;flex:none}
+.mv-entry .mv-top .mv-chip{min-width:0;flex:0 1 auto;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mv-entry .mv-top .mv-chip span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mv-entry .mv-amount{grid-area:amount;font-weight:750;white-space:nowrap;text-align:right}
+.mv-entry .mv-category{grid-area:category;display:flex;gap:6px;min-width:0;overflow:hidden}
+.mv-entry .mv-category .mv-chip{min-width:0;overflow:hidden;white-space:nowrap}
+.mv-entry .mv-category .mv-chip span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mv-entry .mv-actions{grid-area:actions;display:flex;gap:5px;justify-content:flex-end}
+.mv-entry .mv-actions .inline-btn{padding:6px 8px;min-width:34px}
+@media(max-width:520px){.mv-entry{gap:7px 6px}.mv-entry .mv-date{font-size:11px}.mv-entry .mv-chip{font-size:11px;padding:4px 6px;gap:3px}.mv-entry .mv-chip-icon{font-size:13px}.mv-entry .mv-actions .inline-btn{padding:5px 6px;min-width:30px}}
 </style></head><body>
 <div id="gate" class="lock"><h1>💶 MiDinero</h1><p id="gate-text">Comprobando sesión privada…</p><button id="go-login" class="btn hidden">Ir al acceso</button></div>
-<div id="app"><header><div><h1>💶 MiDinero</h1><span>Cuentas y movimientos · versión 0.9.4</span></div><button id="logout" class="btn secondary">Cerrar sesión</button></header>
+<div id="app"><header><div><h1>💶 MiDinero</h1><span>Cuentas y movimientos · versión 0.9.4.1</span></div><button id="logout" class="btn secondary">Cerrar sesión</button></header>
 <main><nav class="nav-tabs" aria-label="Secciones"><button id="nav-accounts" type="button" aria-selected="true">💶 Cuentas y movimientos</button><button id="nav-categories" type="button" aria-selected="false">📂 Categorías</button></nav><div id="message" role="status" aria-live="polite"></div><div class="grid" id="accounts-page">
 <section class="card hero"><p>Saldo total de tus cuentas</p><strong id="total">—</strong><p id="summary">Calculado desde la base de datos</p></section>
 <section class="card"><h2>Tu dinero, bajo control</h2><p>Puedes establecer un saldo inicial y corregirlo sin alterar el historial de movimientos. Ahora puedes registrar gastos, ingresos y transferencias de prueba.</p><p class="muted">⚠️ Fase de pruebas: crea solo cuentas ficticias. No importes aún información real.</p></section>
@@ -204,20 +218,18 @@ function mvChip(label,icon,color){
  return chip;
 }
 function renderMovements(){const box=$('movements');box.replaceChildren();const rows=movementRows.filter(t=>!t.deleted_at).sort((a,b)=>new Date(b.occurred_at)-new Date(a.occurred_at)).slice(0,30);if(!rows.length){box.append(el('p','hint','Todavía no hay movimientos.'));return}for(const t of rows){const a=accountRows.find(x=>x.id===t.account_id),d=accountRows.find(x=>x.id===t.destination_account_id),c=categoryRows.find(x=>x.id===t.category_id),sub=movementSubcategoryRows.find(x=>x.id===t.subcategory_id&&x.category_id===t.category_id);const row=el('div','history-item');
-const first=el('div','mv-line');
+const layout=el('div','mv-entry');
+const top=el('div','mv-top');
 const kindStyle={expense:['💸','#cf424b'],income:['💰','#278653'],transfer:['🔄','#3779c7']}[t.kind]||['🧾','#64748b'];
-first.append(mvChip(kindName(t.kind),...kindStyle),mvChip(a?.name||'Cuenta',a?.icon||'🏦',a?.color));
-const second=el('div','mv-line');
-if(t.kind==='transfer'){
- second.append(mvChip('Destino: '+(d?.name||'Cuenta'),d?.icon||'🏦',d?.color));
-}else{
- if(c)second.append(mvChip(c.name,c.icon||'📁',c.color));
- if(sub)second.append(mvChip(sub.name,'🏷️','#b88a39'));
-}
-const meta=el('div','mv-meta');
-const signed=(t.kind==='expense'?'−':t.kind==='income'?'+':'')+euro(Number(t.amount_cents));
-meta.append(el('span','',new Date(t.occurred_at).toLocaleDateString('es-ES')),el('strong','',signed));
-row.append(first,second,meta);// A movement predating an opening balance is visible but excluded from that account balance.
+top.append(el('span','mv-date',new Date(t.occurred_at).toLocaleDateString('es-ES')),
+ mvChip(kindName(t.kind),...kindStyle),mvChip(a?.name||'Cuenta',a?.icon||'🏦',a?.color));
+const amount=el('strong','mv-amount',(t.kind==='expense'?'−':t.kind==='income'?'+':'')+euro(Number(t.amount_cents)));
+const category=el('div','mv-category');
+if(t.kind==='transfer')category.append(mvChip('Destino: '+(d?.name||'Cuenta'),d?.icon||'🏦',d?.color));
+else {if(c)category.append(mvChip(c.name,c.icon||'📁',c.color));if(sub)category.append(mvChip(sub.name,'🏷️','#b88a39'));}
+const actions=el('div','mv-actions');
+layout.append(top,amount,category,actions);row.append(layout);
+// A movement predating an opening balance is visible but excluded from that account balance.
 const relevant=[t.account_id,t.destination_account_id].filter(Boolean);
 const excluded=relevant.some(id=>{const opening=openingRows.find(b=>b.account_id===id);return opening&&new Date(t.occurred_at)<new Date(opening.as_of)});
 if(excluded){
@@ -233,13 +245,13 @@ if(excluded){
   };
   row.append(repair);
 }
-const editButton=el('button','inline-btn','✏️');editButton.type='button';editButton.setAttribute('aria-label','Editar movimiento');editButton.title='Editar movimiento';editButton.style.marginTop='8px';editButton.onclick=()=>openMovement(t);row.append(editButton);
+const editButton=el('button','inline-btn','✏️');editButton.type='button';editButton.setAttribute('aria-label','Editar movimiento');editButton.title='Editar movimiento';editButton.onclick=()=>openMovement(t);actions.append(editButton);
 const deleteButton=el('button','inline-btn','🗑️');
 deleteButton.type='button';deleteButton.title='Eliminar movimiento';
 deleteButton.setAttribute('aria-label','Eliminar movimiento');
-deleteButton.style.marginTop='8px';deleteButton.style.marginLeft='7px';
+
 deleteButton.onclick=()=>deleteMovement(t,deleteButton);
-row.append(deleteButton);
+actions.append(deleteButton);
 
 box.append(row)}}
 
