@@ -4,7 +4,7 @@
 :root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#17253b;background:#f1f5fa}*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}select{border:1px solid #cad5e4;border-radius:11px;padding:11px;width:100%;background:white}button{cursor:pointer}header{background:#fff;border-bottom:1px solid #e2e8f0;padding:16px max(20px,calc((100vw - 1080px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font-size:23px;margin:0}header span{font-size:12px;color:#68788b}main{max-width:1080px;margin:30px auto;padding:0 18px}.grid{display:grid;grid-template-columns:1.15fr 1fr;gap:18px}.card{background:white;border-radius:22px;padding:24px;box-shadow:0 8px 28px #1832510a}.hero{background:linear-gradient(130deg,#18395c,#2460a4);color:#fff}.hero p{color:#d9e8fa}.hero strong{font-size:clamp(29px,4vw,44px);letter-spacing:-1px}h2{font-size:20px;margin:0 0 12px}p{line-height:1.5;color:#627287}.hero p{margin-bottom:8px}.full{grid-column:1/-1}.account{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid #edf0f5}.account:last-child{border-bottom:0}.symbol{width:43px;height:43px;display:grid;place-items:center;border-radius:13px;color:#fff;font-size:22px;flex-shrink:0}.account-name{flex:1;min-width:0}.account-name b{display:block;overflow-wrap:anywhere}.account-name small{color:#76869a}.money{font-weight:750;white-space:nowrap}.btn{border:0;border-radius:11px;background:#2463b8;color:#fff;padding:11px 15px;font-weight:650}.btn.secondary{background:#e9eef6;color:#243e60}.btn.danger{background:#fee6e6;color:#9b2424}.btn:disabled{opacity:.55;cursor:not-allowed}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.top{display:flex;align-items:center;justify-content:space-between;gap:10px}.muted{font-size:13px;color:#64748b}.message{padding:12px 15px;border-radius:12px;background:#e9f3ff;color:#174875;margin:12px 0}.message.error{background:#ffebeb;color:#a52828}label{display:block;font-weight:650;font-size:14px;margin:12px 0 5px}input{border:1px solid #cad5e4;border-radius:11px;padding:11px;width:100%;background:#fff}dialog{border:0;border-radius:22px;box-shadow:0 22px 75px #15253b45;width:min(440px,calc(100% - 24px));padding:25px}dialog::backdrop{background:#13223885}dialog h2{margin-top:0}.hint{font-size:13px;color:#64748b}.history{max-height:230px;overflow:auto;margin-top:12px}.history-item{border-bottom:1px solid #edf0f5;padding:10px 0;font-size:14px}.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.inline-btn{border:0;background:#edf3fb;color:#244b7e;border-radius:9px;padding:7px 10px}.empty{padding:28px 8px;text-align:center;color:#64748b}.hidden{display:none!important}footer{font-size:12px;color:#78879a;margin:26px 0}.lock{padding:28px;text-align:center;max-width:460px;margin:70px auto;background:white;border-radius:20px}#app{display:none}@media(max-width:740px){.grid{grid-template-columns:1fr}.full{grid-column:auto}main{margin:17px auto}.card{padding:20px}header{padding:15px 18px}.account{gap:9px}.money{font-size:14px}}
 </style></head><body>
 <div id="gate" class="lock"><h1>💶 MiDinero</h1><p id="gate-text">Comprobando sesión privada…</p><button id="go-login" class="btn hidden">Ir al acceso</button></div>
-<div id="app"><header><div><h1>💶 MiDinero</h1><span>Cuentas y movimientos · versión 0.6.1</span></div><button id="logout" class="btn secondary">Cerrar sesión</button></header>
+<div id="app"><header><div><h1>💶 MiDinero</h1><span>Cuentas y movimientos · versión 0.7</span></div><button id="logout" class="btn secondary">Cerrar sesión</button></header>
 <main><div id="message" role="status" aria-live="polite"></div><div class="grid">
 <section class="card hero"><p>Saldo total de tus cuentas</p><strong id="total">—</strong><p id="summary">Calculado desde la base de datos</p></section>
 <section class="card"><h2>Tu dinero, bajo control</h2><p>Puedes establecer un saldo inicial y corregirlo sin alterar el historial de movimientos. Ahora puedes registrar gastos, ingresos y transferencias de prueba.</p><p class="muted">⚠️ Fase de pruebas: crea solo cuentas ficticias. No importes aún información real.</p></section>
@@ -57,7 +57,48 @@ if(excluded){
   row.append(repair);
 }
 const editButton=el('button','inline-btn','✏️');editButton.type='button';editButton.setAttribute('aria-label','Editar movimiento');editButton.title='Editar movimiento';editButton.style.marginTop='8px';editButton.onclick=()=>openMovement(t);row.append(editButton);
+const deleteButton=el('button','inline-btn','🗑️');
+deleteButton.type='button';deleteButton.title='Eliminar movimiento';
+deleteButton.setAttribute('aria-label','Eliminar movimiento');
+deleteButton.style.marginTop='8px';deleteButton.style.marginLeft='7px';
+deleteButton.onclick=()=>deleteMovement(t,deleteButton);
+row.append(deleteButton);
+
 box.append(row)}}
+
+let undoTimer=null;
+function clearUndo(){
+ if(undoTimer!==null){clearTimeout(undoTimer);undoTimer=null}
+ const previous=document.getElementById('undo-notice');
+ if(previous)previous.remove();
+}
+async function deleteMovement(movement,button){
+ const description=kindName(movement.kind).toLowerCase()+' de '+euro(Number(movement.amount_cents));
+ if(!confirm('¿Eliminar este '+description+'?\n\nDejará de aparecer y de afectar a los saldos. Podrás deshacerlo durante 15 segundos.'))return;
+ button.disabled=true;
+ const {data,error}=await client.from('transactions')
+   .update({deleted_at:new Date().toISOString()})
+   .eq('id',movement.id).eq('user_id',currentUser.id).is('deleted_at',null)
+   .select('id');
+ if(error||!data?.length){button.disabled=false;notice('No se pudo eliminar el movimiento: '+(error?.message||'no se confirmó la actualización.'),true);return}
+ clearUndo();
+ await refresh();
+ notice('Movimiento eliminado. Los saldos se han recalculado.');
+ const banner=el('div','message');banner.id='undo-notice';banner.setAttribute('role','status');
+ banner.append(document.createTextNode('Movimiento eliminado. '));
+ const undo=el('button','inline-btn','↶ Deshacer');undo.type='button';
+ undo.onclick=async()=>{
+  undo.disabled=true;
+  const {data:restored,error:restoreError}=await client.from('transactions')
+   .update({deleted_at:null}).eq('id',movement.id).eq('user_id',currentUser.id)
+   .not('deleted_at','is',null).select('id');
+  if(restoreError||!restored?.length){undo.disabled=false;notice('No se pudo recuperar el movimiento: '+(restoreError?.message||'no se confirmó la actualización.'),true);return}
+  clearUndo();await refresh();notice('Movimiento recuperado. Saldos restaurados.');
+ };
+ banner.append(undo);
+ $('message').insertAdjacentElement('afterend',banner);
+ undoTimer=setTimeout(()=>{undoTimer=null;banner.remove()},15000);
+}
 function movementOptions(){
  const k=$('mv-kind').value;
  const oldAccount=$('mv-account').value,oldDestination=$('mv-destination').value,oldCategory=$('mv-category').value;
