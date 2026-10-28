@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>MiDinero · Cuentas (beta 0.9.4.2)</title>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>MiDinero · Cuentas (beta 0.9.4.4)</title>
 <style>
 :root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#17253b;background:#f1f5fa}*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}select{border:1px solid #cad5e4;border-radius:11px;padding:11px;width:100%;background:white}button{cursor:pointer}header{background:#fff;border-bottom:1px solid #e2e8f0;padding:16px max(20px,calc((100vw - 1080px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font-size:23px;margin:0}header span{font-size:12px;color:#68788b}main{max-width:1080px;margin:30px auto;padding:0 18px}.grid{display:grid;grid-template-columns:1.15fr 1fr;gap:18px}.card{background:white;border-radius:22px;padding:24px;box-shadow:0 8px 28px #1832510a}.hero{background:linear-gradient(130deg,#18395c,#2460a4);color:#fff}.hero p{color:#d9e8fa}.hero strong{font-size:clamp(29px,4vw,44px);letter-spacing:-1px}h2{font-size:20px;margin:0 0 12px}p{line-height:1.5;color:#627287}.hero p{margin-bottom:8px}.full{grid-column:1/-1}.account{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid #edf0f5}.account:last-child{border-bottom:0}.symbol{width:43px;height:43px;display:grid;place-items:center;border-radius:13px;color:#fff;font-size:22px;flex-shrink:0}.account-name{flex:1;min-width:0}.account-name b{display:block;overflow-wrap:anywhere}.account-name small{color:#76869a}.money{font-weight:750;white-space:nowrap}.btn{border:0;border-radius:11px;background:#2463b8;color:#fff;padding:11px 15px;font-weight:650}.btn.secondary{background:#e9eef6;color:#243e60}.btn.danger{background:#fee6e6;color:#9b2424}.btn:disabled{opacity:.55;cursor:not-allowed}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.top{display:flex;align-items:center;justify-content:space-between;gap:10px}.muted{font-size:13px;color:#64748b}.message{padding:12px 15px;border-radius:12px;background:#e9f3ff;color:#174875;margin:12px 0}.message.error{background:#ffebeb;color:#a52828}label{display:block;font-weight:650;font-size:14px;margin:12px 0 5px}input{border:1px solid #cad5e4;border-radius:11px;padding:11px;width:100%;background:#fff}dialog{border:0;border-radius:22px;box-shadow:0 22px 75px #15253b45;width:min(440px,calc(100% - 24px));padding:25px}dialog::backdrop{background:#13223885}dialog h2{margin-top:0}.hint{font-size:13px;color:#64748b}.history{max-height:230px;overflow:auto;margin-top:12px}.history-item{border-bottom:1px solid #edf0f5;padding:10px 0;font-size:14px}.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.inline-btn{border:0;background:#edf3fb;color:#244b7e;border-radius:9px;padding:7px 10px}.empty{padding:28px 8px;text-align:center;color:#64748b}.hidden{display:none!important}footer{font-size:12px;color:#78879a;margin:26px 0}.lock{padding:28px;text-align:center;max-width:460px;margin:70px auto;background:white;border-radius:20px}#app{display:none}@media(max-width:740px){.grid{grid-template-columns:1fr}.full{grid-column:auto}main{margin:17px auto}.card{padding:20px}header{padding:15px 18px}.account{gap:9px}.money{font-size:14px}}
 .nav-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}.nav-tabs button{border:1px solid #cad5e4;border-radius:10px;padding:9px 13px;background:#fff;color:#244b7e;font-weight:650}.nav-tabs button[aria-selected="true"]{background:#2463b8;color:#fff;border-color:#2463b8}.cat-preview{border-bottom:1px solid #edf0f5;padding:12px 0}.cat-preview:last-child{border:0}.cat-preview small{display:block;color:#64748b;margin-top:4px;line-height:1.5}#undo-notice{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom, 0px));left:50%;transform:translateX(-50%);z-index:1000;width:min(440px,calc(100vw - 28px));box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:#173c63;color:#fff;border-radius:14px;box-shadow:0 8px 32px #13223855}#undo-notice .inline-btn{background:#fff;color:#173c63;font-weight:700;white-space:nowrap}#undo-notice:focus{outline:3px solid #80baff;outline-offset:3px}
@@ -36,17 +36,19 @@
  .mv-entry .mv-date{flex:0 0 78px;font-size:12px}
  .mv-entry .mv-kind{flex:0 0 25px;width:25px;height:25px;display:grid;place-items:center;border-radius:8px;color:white;font-size:13px;font-weight:800}
  .mv-entry .mv-account{flex:0 1 165px;min-width:75px}
- .mv-entry .mv-category{flex:1 1 200px;min-width:0;gap:5px;overflow:hidden}
+ .mv-entry .mv-category{flex:1 1 auto;min-width:0;gap:5px;overflow:hidden}
  .mv-entry .mv-chip{padding:4px 7px;border-radius:8px;font-size:12px;white-space:nowrap;overflow:hidden;flex-shrink:1}
  .mv-entry .mv-chip span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .mv-entry .mv-chip-icon{font-size:13px}
- .mv-entry .mv-amount{flex:0 0 94px;text-align:right;font-size:13px}
+ .mv-entry .mv-amount{flex:0 0 104px;margin-left:auto;text-align:right;font-size:13px}
  .mv-entry .mv-actions{flex:0 0 76px}
  .mv-entry .mv-actions .inline-btn{padding:5px 7px;min-width:33px}
+ .mv-entry .mv-top{flex:0 0 auto;max-width:40%}
+ .mv-entry .mv-category{max-width:none}
 }
 </style></head><body>
 <div id="gate" class="lock"><h1>💶 MiDinero</h1><p id="gate-text">Comprobando sesión privada…</p><button id="go-login" class="btn hidden">Ir al acceso</button></div>
-<div id="app"><header><div><h1>💶 MiDinero</h1><span>Cuentas y movimientos · versión 0.9.4.2</span></div><button id="logout" class="btn secondary">Cerrar sesión</button></header>
+<div id="app"><header><div><h1>💶 MiDinero</h1><span>Cuentas y movimientos · versión 0.9.4.4</span></div><button id="logout" class="btn secondary">Cerrar sesión</button></header>
 <main><nav class="nav-tabs" aria-label="Secciones"><button id="nav-accounts" type="button" aria-selected="true">💶 Cuentas y movimientos</button><button id="nav-categories" type="button" aria-selected="false">📂 Categorías</button></nav><div id="message" role="status" aria-live="polite"></div><div class="grid" id="accounts-page">
 <section class="card hero"><p>Saldo total de tus cuentas</p><strong id="total">—</strong><p id="summary">Calculado desde la base de datos</p></section>
 <section class="card"><h2>Tu dinero, bajo control</h2><p>Puedes establecer un saldo inicial y corregirlo sin alterar el historial de movimientos. Ahora puedes registrar gastos, ingresos y transferencias de prueba.</p><p class="muted">⚠️ Fase de pruebas: crea solo cuentas ficticias. No importes aún información real.</p></section>
@@ -248,7 +250,7 @@ const category=el('div','mv-category');
 if(t.kind==='transfer')category.append(mvChip('Destino: '+(d?.name||'Cuenta'),d?.icon||'🏦',d?.color));
 else {if(c)category.append(mvChip(c.name,c.icon||'📁',c.color));if(sub)category.append(mvChip(sub.name,'🏷️','#b88a39'));}
 const actions=el('div','mv-actions');
-layout.append(top,amount,category,actions);row.append(layout);
+layout.append(top,category,amount,actions);row.append(layout);
 // A movement predating an opening balance is visible but excluded from that account balance.
 const relevant=[t.account_id,t.destination_account_id].filter(Boolean);
 const excluded=relevant.some(id=>{const opening=openingRows.find(b=>b.account_id===id);return opening&&new Date(t.occurred_at)<new Date(opening.as_of)});
