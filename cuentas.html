@@ -57,9 +57,13 @@
 .archived-section summary{cursor:pointer;font-weight:700;color:#40546e}
 .archive-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #d7e0eb;font-size:14px}
 .archive-row:last-child{border:0}
+/* Controles discretos de archivado y restauración, sin caja. */
+.archive-icon-btn{border:0;background:transparent!important;box-shadow:none!important;border-radius:6px;padding:4px 5px!important;min-width:29px;min-height:29px;display:inline-grid;place-items:center;font-size:17px;line-height:1.2;color:inherit}
+.archive-icon-btn:hover{background:#e2e8f0!important}
+.archive-icon-btn:focus-visible{outline:2px solid #2463b8;outline-offset:2px}
 </style></head><body>
 <div id="gate" class="lock"><h1>💶 MiDinero</h1><p id="gate-text">Comprobando sesión privada…</p><button id="go-login" class="btn hidden">Ir al acceso</button></div>
-<div id="app"><header><div><h1>💶 MiDinero</h1><span>Cuentas y movimientos · versión 0.9.6</span></div><button id="logout" class="btn secondary">Cerrar sesión</button></header>
+<div id="app"><header><div><h1>💶 MiDinero</h1><span>Cuentas y movimientos · versión 0.9.6.1</span></div><button id="logout" class="btn secondary">Cerrar sesión</button></header>
 <main><nav class="nav-tabs" aria-label="Secciones"><button id="nav-accounts" type="button" aria-selected="true">💶 Cuentas y movimientos</button><button id="nav-categories" type="button" aria-selected="false">📂 Categorías</button></nav><div id="message" role="status" aria-live="polite"></div><div class="grid" id="accounts-page">
 <section class="card hero"><p>Saldo total de tus cuentas</p><strong id="total">—</strong><p id="summary">Calculado desde la base de datos</p></section>
 <section class="card"><h2>Tu dinero, bajo control</h2><p>Puedes establecer un saldo inicial y corregirlo sin alterar el historial de movimientos. Ahora puedes registrar gastos, ingresos y transferencias de prueba.</p><p class="muted">⚠️ Fase de pruebas: crea solo cuentas ficticias. No importes aún información real.</p></section>
@@ -92,7 +96,7 @@ function renderCategoryPreview(){
   const title=el('b','',c.name);const bubble=el('span','category-icon-bubble',c.icon||'📁');bubble.style.backgroundColor=/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'#64748b';const catTitle=el('div','row');catTitle.append(bubble,title);heading.append(catTitle);
   const edit=el('button','inline-btn','✏️');edit.type='button';edit.title='Editar categoría '+c.name;edit.setAttribute('aria-label','Editar categoría '+c.name);
   edit.onclick=()=>{renamingCategory=c;$('rename-category-info').textContent='Tipo: '+(c.kind==='expense'?'Gasto':'Ingreso');$('rename-category-name').value=c.name;$('rename-category-icon').value=c.icon||'📁';$('rename-category-color').value=/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'#64748b';$('rename-category-error').textContent='';renderCategoryIconPicker();$('rename-category-dialog').showModal();$('rename-category-name').focus();$('rename-category-name').select()};
-  const archive=el('button','inline-btn','📦 Archivar');archive.type='button';archive.title='Archivar categoría '+c.name;
+  const archive=el('button','archive-icon-btn','🚫');archive.type='button';archive.title='Archivar categoría '+c.name;archive.setAttribute('aria-label','Archivar categoría '+c.name);
   archive.onclick=()=>setArchived('categories',c,true);
   const controls=el('div','row');controls.append(edit,archive);heading.append(controls);row.append(heading);
   const subs=importedSubcategoryRows.filter(x=>x.category_id===c.id&&!x.archived_at).sort(spanishNameSort);
@@ -102,7 +106,7 @@ function renderCategoryPreview(){
     const chip=mvChip(sub.name,sub.icon||'🏷️',sub.color||'#b88a39');
     const editSub=el('button','inline-btn','✏️');editSub.type='button';editSub.title='Editar subcategoría '+sub.name;editSub.setAttribute('aria-label','Editar subcategoría '+sub.name+' de '+c.name);
     editSub.onclick=()=>{renamingSubcategory=sub;$('rename-subcategory-info').textContent='Categoría: '+c.name;$('rename-subcategory-name').value=sub.name;$('rename-subcategory-icon').value=sub.icon||'🏷️';$('rename-subcategory-color').value=/^#[0-9a-f]{6}$/i.test(sub.color||'')?sub.color:'#b88a39';renderSubcategoryIconPicker();$('rename-subcategory-error').textContent='';$('rename-subcategory-dialog').showModal();$('rename-subcategory-name').focus();$('rename-subcategory-name').select()};
-    const archiveSub=el('button','inline-btn','📦');archiveSub.type='button';archiveSub.title='Archivar subcategoría '+sub.name;archiveSub.setAttribute('aria-label','Archivar subcategoría '+sub.name);
+    const archiveSub=el('button','archive-icon-btn','🚫');archiveSub.type='button';archiveSub.title='Archivar subcategoría '+sub.name;archiveSub.setAttribute('aria-label','Archivar subcategoría '+sub.name);
     archiveSub.onclick=()=>setArchived('subcategories',sub,true);
     chip.append(editSub,archiveSub);sublist.append(chip);
    }row.append(sublist);
@@ -114,8 +118,8 @@ function renderCategoryPreview(){
  const archivedSubs=importedSubcategoryRows.filter(x=>x.archived_at&&categoryRows.some(c=>c.id===x.category_id&&c.kind===selectedCategoryKind&&!c.archived_at)).sort(spanishNameSort);
  if(archivedCats.length||archivedSubs.length){
   const section=el('details','archived-section');const summary=el('summary','',`📦 Archivadas (${archivedCats.length} categorías · ${archivedSubs.length} subcategorías)`);section.append(summary);
-  for(const c of archivedCats){const line=el('div','archive-row');line.append(el('span','',`${c.icon||'📁'} ${c.name} (categoría)`));const restore=el('button','inline-btn','♻️ Restaurar');restore.type='button';restore.onclick=()=>setArchived('categories',c,false);line.append(restore);section.append(line)}
-  for(const sub of archivedSubs){const parent=categoryRows.find(c=>c.id===sub.category_id);const line=el('div','archive-row');line.append(el('span','',`${sub.icon||'🏷️'} ${parent?.name||'Categoría'} › ${sub.name}`));const restore=el('button','inline-btn','♻️ Restaurar');restore.type='button';restore.onclick=()=>setArchived('subcategories',sub,false);line.append(restore);section.append(line)}
+  for(const c of archivedCats){const line=el('div','archive-row');line.append(el('span','',`${c.icon||'📁'} ${c.name} (categoría)`));const restore=el('button','archive-icon-btn','♻️');restore.type='button';restore.title='Restaurar categoría '+c.name;restore.setAttribute('aria-label','Restaurar categoría '+c.name);restore.onclick=()=>setArchived('categories',c,false);line.append(restore);section.append(line)}
+  for(const sub of archivedSubs){const parent=categoryRows.find(c=>c.id===sub.category_id);const line=el('div','archive-row');line.append(el('span','',`${sub.icon||'🏷️'} ${parent?.name||'Categoría'} › ${sub.name}`));const restore=el('button','archive-icon-btn','♻️');restore.type='button';restore.title='Restaurar subcategoría '+sub.name;restore.setAttribute('aria-label','Restaurar subcategoría '+sub.name);restore.onclick=()=>setArchived('subcategories',sub,false);line.append(restore);section.append(line)}
   list.append(section);
  }
 
