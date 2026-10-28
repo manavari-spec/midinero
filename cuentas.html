@@ -61,13 +61,17 @@
 .archive-icon-btn{border:0;background:transparent!important;box-shadow:none!important;border-radius:6px;padding:4px 5px!important;min-width:29px;min-height:29px;display:inline-grid;place-items:center;font-size:17px;line-height:1.2;color:inherit}
 .archive-icon-btn:hover{background:#e2e8f0!important}
 .archive-icon-btn:focus-visible{outline:2px solid #2463b8;outline-offset:2px}
+
+.account-archive{margin-top:15px;padding-top:10px;border-top:1px solid #e2e8f0}
+.account-archive summary{cursor:pointer;font-weight:650;color:#475569;margin-bottom:8px}
+.account-archived-note{font-size:12px;color:#64748b}
 </style></head><body>
 <div id="gate" class="lock"><h1>💶 MiDinero</h1><p id="gate-text">Comprobando sesión privada…</p><button id="go-login" class="btn hidden">Ir al acceso</button></div>
-<div id="app"><header><div><h1>💶 MiDinero</h1><span>Cuentas y movimientos · versión 0.9.6.1</span></div><button id="logout" class="btn secondary">Cerrar sesión</button></header>
+<div id="app"><header><div><h1>💶 MiDinero</h1><span>Cuentas y movimientos · versión 0.9.7</span></div><button id="logout" class="btn secondary">Cerrar sesión</button></header>
 <main><nav class="nav-tabs" aria-label="Secciones"><button id="nav-accounts" type="button" aria-selected="true">💶 Cuentas y movimientos</button><button id="nav-categories" type="button" aria-selected="false">📂 Categorías</button></nav><div id="message" role="status" aria-live="polite"></div><div class="grid" id="accounts-page">
 <section class="card hero"><p>Saldo total de tus cuentas</p><strong id="total">—</strong><p id="summary">Calculado desde la base de datos</p></section>
 <section class="card"><h2>Tu dinero, bajo control</h2><p>Puedes establecer un saldo inicial y corregirlo sin alterar el historial de movimientos. Ahora puedes registrar gastos, ingresos y transferencias de prueba.</p><p class="muted">⚠️ Fase de pruebas: crea solo cuentas ficticias. No importes aún información real.</p></section>
-<section class="card full"><div class="top"><h2>Cuentas <span id="count" class="muted"></span></h2><button id="new" class="btn">+ Añadir cuenta</button></div><div id="accounts" class="empty">Cargando cuentas…</div></section>
+<section class="card full"><div class="top"><h2>Cuentas <span id="count" class="muted"></span></h2><button id="new" class="btn">+ Añadir cuenta</button></div><div id="accounts" class="empty">Cargando cuentas…</div><div id="archived-accounts"></div></section>
 <section class="card full"><div class="top"><h2>Movimientos de prueba</h2><button id="new-movement" class="btn">+ Nuevo movimiento</button></div><div id="movements" class="history">Cargando…</div></section></div><section id="categories-page" class="card hidden" aria-label="Categorías"><h2>📂 Categorías</h2><p>Tus categorías guardadas en Supabase. Puedes editar nombres, iconos y colores sin alterar los movimientos existentes.</p><div class="nav-tabs" role="tablist" aria-label="Tipo de categoría"><button id="cat-expense" type="button" role="tab" aria-selected="true">🔴 Gastos (15)</button><button id="cat-income" type="button" role="tab" aria-selected="false">🟢 Ingresos (5)</button></div><div class="row" style="margin-bottom:14px"><button type="button" id="import-categories" class="btn">⬇️ Importar categorías de TrackWallet</button><span id="import-status" class="hint" role="status" aria-live="polite"></span></div><div id="category-preview-list"></div><p id="category-edit-status" class="hint" role="status" aria-live="polite"></p><p class="hint">Las subcategorías se muestran bajo cada categoría. Editar un nombre no modifica los movimientos ni los saldos.</p></section><footer>MiDinero · Datos privados con sesión iniciada · Sin modo offline por ahora</footer></main></div>
 <dialog id="balance-dialog"><form id="balance-form"><h2 id="balance-title">Saldo</h2><p id="balance-info" class="hint"></p><label for="balance-value">Saldo en euros</label><input id="balance-value" type="text" inputmode="decimal" placeholder="Ej.: 4980,50" required><p class="hint" id="balance-explain"></p><div class="row" style="justify-content:flex-end;margin-top:20px"><button type="button" class="btn secondary" id="balance-cancel">Cancelar</button><button type="submit" class="btn" id="balance-save">Guardar saldo</button></div></form></dialog>
 <dialog id="history-dialog"><h2 id="history-title">Historial de ajustes</h2><div id="history-list" class="history"></div><button type="button" class="btn secondary" id="history-close" style="margin-top:15px">Cerrar</button></dialog>
@@ -117,7 +121,7 @@ function renderCategoryPreview(){
  const archivedCats=categoryRows.filter(c=>c.kind===selectedCategoryKind&&c.archived_at).sort(spanishNameSort);
  const archivedSubs=importedSubcategoryRows.filter(x=>x.archived_at&&categoryRows.some(c=>c.id===x.category_id&&c.kind===selectedCategoryKind&&!c.archived_at)).sort(spanishNameSort);
  if(archivedCats.length||archivedSubs.length){
-  const section=el('details','archived-section');const summary=el('summary','',`📦 Archivadas (${archivedCats.length} categorías · ${archivedSubs.length} subcategorías)`);section.append(summary);
+  const section=el('details','archived-section');const summary=el('summary','',`🚫 Archivadas (${archivedCats.length} categorías · ${archivedSubs.length} subcategorías)`);section.append(summary);
   for(const c of archivedCats){const line=el('div','archive-row');line.append(el('span','',`${c.icon||'📁'} ${c.name} (categoría)`));const restore=el('button','archive-icon-btn','♻️');restore.type='button';restore.title='Restaurar categoría '+c.name;restore.setAttribute('aria-label','Restaurar categoría '+c.name);restore.onclick=()=>setArchived('categories',c,false);line.append(restore);section.append(line)}
   for(const sub of archivedSubs){const parent=categoryRows.find(c=>c.id===sub.category_id);const line=el('div','archive-row');line.append(el('span','',`${sub.icon||'🏷️'} ${parent?.name||'Categoría'} › ${sub.name}`));const restore=el('button','archive-icon-btn','♻️');restore.type='button';restore.title='Restaurar subcategoría '+sub.name;restore.setAttribute('aria-label','Restaurar subcategoría '+sub.name);restore.onclick=()=>setArchived('subcategories',sub,false);line.append(restore);section.append(line)}
   list.append(section);
@@ -270,7 +274,53 @@ const {data:{user},error:userError}=await client.auth.getUser();if(userError||!u
 async function refresh(){notice('');const [a,b,t,j,c,sub]=await Promise.all([client.from('accounts').select('id,name,icon,color,sort_order,archived_at').order('sort_order').order('created_at'),client.from('opening_balances').select('account_id,amount_cents,as_of'),client.from('transactions').select('id,account_id,destination_account_id,category_id,subcategory_id,kind,amount_cents,occurred_at,deleted_at'),client.from('balance_adjustments').select('account_id,delta_cents,occurred_at,deleted_at'),client.from('categories').select('id,name,kind,icon,color,archived_at').order('sort_order'),client.from('subcategories').select('id,category_id,name,icon,color,archived_at')]);const err=[a,b,t,j,c,sub].find(x=>x.error);if(err){notice('No se pudieron cargar los datos: '+err.error.message,true);$('accounts').textContent='No se pudieron cargar las cuentas.';return}
 adjustmentRows=j.data;movementRows=t.data;categoryRows=c.data;movementSubcategoryRows=sub.data;importedSubcategoryRows=sub.data;openingRows=b.data;const opening=new Map(b.data.map(x=>[x.account_id,x]));accountRows=a.data.map(x=>{const base=opening.get(x.id);let balance=base?Number(base.amount_cents):0;const since=base?new Date(base.as_of).getTime():-Infinity;for(const tr of t.data){if(tr.deleted_at||new Date(tr.occurred_at).getTime()<since)continue;const v=Number(tr.amount_cents);if(tr.kind==='income'&&tr.account_id===x.id)balance+=v;if(tr.kind==='expense'&&tr.account_id===x.id)balance-=v;if(tr.kind==='transfer'){if(tr.account_id===x.id)balance-=v;if(tr.destination_account_id===x.id)balance+=v}}for(const adj of j.data){if(!adj.deleted_at&&adj.account_id===x.id&&new Date(adj.occurred_at).getTime()>=since)balance+=Number(adj.delta_cents)}return {...x,balance,hasOpening:!!base}});
 render();renderMovements();if(!$('categories-page').classList.contains('hidden'))renderCategoryPreview()}
-function render(){const active=accountRows.filter(x=>!x.archived_at);$('count').textContent=`(${active.length})`;$('total').textContent=euro(active.reduce((s,x)=>s+x.balance,0));$('summary').textContent=`${active.length} cuentas activas · Saldos de prueba`;const target=$('accounts');target.replaceChildren();target.className=active.length?'':'empty';if(!active.length){target.textContent='Todavía no hay cuentas. Puedes crear una cuenta ficticia para probar la aplicación.';return}for(const a of active){const line=el('div','account');const icon=el('div','symbol',a.icon||'🏦');icon.style.backgroundColor=/^#[0-9a-f]{6}$/i.test(a.color||'')?a.color:'#64748b';line.append(icon);const info=el('div','account-name');info.append(el('b','',a.name),el('small','',a.hasOpening?'Saldo calculado':'Sin saldo inicial'));line.append(info,el('span','money',euro(a.balance)));const edit=el('button','inline-btn','Editar');edit.type='button';edit.setAttribute('aria-label','Editar '+a.name);edit.onclick=()=>openEditor(a);const actions=el('div','actions');actions.append(edit);const correct=el('button','inline-btn',a.hasOpening?'Corregir saldo':'Saldo inicial');correct.type='button';correct.onclick=()=>openBalance(a);actions.append(correct);if(a.hasOpening){const hist=el('button','inline-btn','Historial');hist.type='button';hist.onclick=()=>showHistory(a);actions.append(hist)}line.append(actions);target.append(line)}}
+function render(){
+ const active=accountRows.filter(x=>!x.archived_at);
+ const archived=accountRows.filter(x=>x.archived_at);
+ $('count').textContent=`(${active.length})`;
+ $('total').textContent=euro(active.reduce((sum,x)=>sum+x.balance,0));
+ $('summary').textContent=`${active.length} cuentas activas · Saldos de prueba`;
+ const target=$('accounts');target.replaceChildren();target.className=active.length?'':'empty';
+ if(!active.length)target.textContent='Todavía no hay cuentas activas. Puedes crear una cuenta ficticia.';
+ for(const a of active)target.append(renderAccountRow(a,false));
+ const box=$('archived-accounts');box.replaceChildren();
+ if(archived.length){
+  const details=el('details','account-archive');
+  details.append(el('summary','',`🚫 Archivadas (${archived.length})`));
+  details.append(el('p','account-archived-note','Estos saldos se conservan, pero no forman parte del total de cuentas activas.'));
+  for(const a of archived)details.append(renderAccountRow(a,true));
+  details.append(el('p','account-archived-note','Total archivado: '+euro(archived.reduce((sum,a)=>sum+a.balance,0))));
+  box.append(details);
+ }
+}
+function renderAccountRow(a,archived){
+ const line=el('div','account');
+ const icon=el('div','symbol',a.icon||'🏦');
+ icon.style.backgroundColor=/^#[0-9a-f]{6}$/i.test(a.color||'')?a.color:'#64748b';
+ const info=el('div','account-name');
+ info.append(el('b','',a.name),el('small','',archived?'Cuenta archivada':a.hasOpening?'Saldo calculado':'Sin saldo inicial'));
+ line.append(icon,info,el('span','money',euro(a.balance)));
+ const actions=el('div','actions');
+ if(!archived){
+  const edit=el('button','inline-btn','Editar');edit.type='button';edit.onclick=()=>openEditor(a);actions.append(edit);
+  const correct=el('button','inline-btn',a.hasOpening?'Corregir saldo':'Saldo inicial');correct.type='button';correct.onclick=()=>openBalance(a);actions.append(correct);
+ }
+ if(a.hasOpening){const hist=el('button','inline-btn','Historial');hist.type='button';hist.onclick=()=>showHistory(a);actions.append(hist)}
+ const toggle=el('button','archive-icon-btn',archived?'♻️':'🚫');
+ toggle.type='button';toggle.title=archived?'Restaurar cuenta':'Archivar cuenta';toggle.setAttribute('aria-label',toggle.title+' '+a.name);
+ toggle.onclick=()=>toggleAccountArchive(a,!archived);
+ actions.append(toggle);line.append(actions);return line;
+}
+async function toggleAccountArchive(a,archive){
+ if(archive){
+  const warning=a.balance!==0?'\n\nAtención: la cuenta conserva un saldo de '+euro(a.balance)+'. Dejará de figurar en el total activo.':'';
+  if(!confirm('¿Archivar «'+a.name+'»? No se borrarán sus movimientos ni su saldo.'+warning))return;
+ }else if(!confirm('¿Restaurar «'+a.name+'»? Volverá a estar disponible para nuevos movimientos.'))return;
+ const {error}=await client.from('accounts').update({archived_at:archive?new Date().toISOString():null}).eq('id',a.id).eq('user_id',currentUser.id);
+ if(error){notice('No se pudo '+(archive?'archivar':'restaurar')+' la cuenta: '+error.message,true);return}
+ await refresh();notice('Cuenta '+(archive?'archivada':'restaurada')+' correctamente.');
+}
+
 function openEditor(a=null){editing=a;$('editor-title').textContent=a?'Editar cuenta':'Nueva cuenta';$('name').value=a?.name||'';$('icon').value=a?.icon||'🏦';$('color').value=/^#[0-9a-f]{6}$/i.test(a?.color||'')?a.color:'#2872c7';$('editor').showModal();$('name').focus()}
 function parseEuros(raw){let v=raw.trim().replace(/\s/g,'');let neg=v.startsWith('-');if(neg)v=v.slice(1);if(!/^(?:\d+|\d{1,3}(?:\.\d{3})+)(?:,\d{1,2})?$/.test(v)&&!/^\d+\.\d{1,2}$/.test(v))return null;let p=v.includes(',')?v.split(','):(/^\d+\.\d{1,2}$/.test(v)?v.split('.'): [v]);let n=Number(p[0].replace(/\./g,''))*100+Number((p[1]||'').padEnd(2,'0'));return Number.isSafeInteger(n)?(neg?-n:n):null}
 function openBalance(a){balanceAccount=a;$('balance-title').textContent=a.hasOpening?'Corregir saldo':'Establecer saldo inicial';$('balance-info').textContent=a.name+' · Saldo mostrado: '+euro(a.balance);$('balance-value').value=(a.balance/100).toFixed(2).replace('.',',');$('balance-explain').textContent=a.hasOpening?'Se registrará únicamente la diferencia respecto al saldo actual. No se borrarán movimientos.':'Se establecerá el saldo de apertura de esta cuenta a partir de ahora.';$('balance-dialog').showModal();$('balance-value').focus();$('balance-value').select()}
