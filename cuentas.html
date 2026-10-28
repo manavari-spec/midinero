@@ -65,9 +65,10 @@
 .account-archive{margin-top:15px;padding-top:10px;border-top:1px solid #e2e8f0}
 .account-archive summary{cursor:pointer;font-weight:650;color:#475569;margin-bottom:8px}
 .account-archived-note{font-size:12px;color:#64748b}
+.account-action-icon{min-width:35px;min-height:35px;padding:6px;display:inline-grid;place-items:center;font-size:17px}.account-action-icon:focus-visible{outline:3px solid #2463b8;outline-offset:2px}
 </style></head><body>
 <div id="gate" class="lock"><h1>💶 MiDinero</h1><p id="gate-text">Comprobando sesión privada…</p><button id="go-login" class="btn hidden">Ir al acceso</button></div>
-<div id="app"><header><div><h1>💶 MiDinero</h1><span>Cuentas y movimientos · versión 0.9.7</span></div><button id="logout" class="btn secondary">Cerrar sesión</button></header>
+<div id="app"><header><div><h1>💶 MiDinero</h1><span>Cuentas y movimientos · versión 0.9.8 · fase 1</span></div><button id="logout" class="btn secondary">Cerrar sesión</button></header>
 <main><nav class="nav-tabs" aria-label="Secciones"><button id="nav-accounts" type="button" aria-selected="true">💶 Cuentas y movimientos</button><button id="nav-categories" type="button" aria-selected="false">📂 Categorías</button></nav><div id="message" role="status" aria-live="polite"></div><div class="grid" id="accounts-page">
 <section class="card hero"><p>Saldo total de tus cuentas</p><strong id="total">—</strong><p id="summary">Calculado desde la base de datos</p></section>
 <section class="card"><h2>Tu dinero, bajo control</h2><p>Puedes establecer un saldo inicial y corregirlo sin alterar el historial de movimientos. Ahora puedes registrar gastos, ingresos y transferencias de prueba.</p><p class="muted">⚠️ Fase de pruebas: crea solo cuentas ficticias. No importes aún información real.</p></section>
@@ -302,10 +303,10 @@ function renderAccountRow(a,archived){
  line.append(icon,info,el('span','money',euro(a.balance)));
  const actions=el('div','actions');
  if(!archived){
-  const edit=el('button','inline-btn','Editar');edit.type='button';edit.onclick=()=>openEditor(a);actions.append(edit);
-  const correct=el('button','inline-btn',a.hasOpening?'Corregir saldo':'Saldo inicial');correct.type='button';correct.onclick=()=>openBalance(a);actions.append(correct);
+  const edit=el('button','inline-btn account-action-icon','✏️');edit.type='button';edit.title='Editar cuenta';edit.setAttribute('aria-label','Editar cuenta '+a.name);edit.onclick=()=>openEditor(a);actions.append(edit);
+  const correct=el('button','inline-btn account-action-icon','💶');correct.type='button';correct.title=a.hasOpening?'Corregir saldo':'Establecer saldo inicial';correct.setAttribute('aria-label',correct.title+' de '+a.name);correct.onclick=()=>openBalance(a);actions.append(correct);
  }
- if(a.hasOpening){const hist=el('button','inline-btn','Historial');hist.type='button';hist.onclick=()=>showHistory(a);actions.append(hist)}
+ if(a.hasOpening){const hist=el('button','inline-btn account-action-icon','🕘');hist.type='button';hist.title='Historial de ajustes';hist.setAttribute('aria-label','Historial de ajustes de '+a.name);hist.onclick=()=>showHistory(a);actions.append(hist)}
  const toggle=el('button','archive-icon-btn',archived?'♻️':'🚫');
  toggle.type='button';toggle.title=archived?'Restaurar cuenta':'Archivar cuenta';toggle.setAttribute('aria-label',toggle.title+' '+a.name);
  toggle.onclick=()=>toggleAccountArchive(a,!archived);
