@@ -1,0 +1,25 @@
+{
+  "name": "MiDinero Pruebas A1.1",
+  "short_name": "MiDinero Test",
+  "description": "MiDinero versión de pruebas con icono A1.1",
+  "id": "./cuentas_0.14.7.14a_PWA5_prueba.html",
+  "start_url": "./cuentas_0.14.7.14a_PWA5_prueba.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#061b35",
+  "theme_color": "#062346",
+  "icons": [
+    {
+      "src": "./midinero-a11-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./midinero-a11-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
